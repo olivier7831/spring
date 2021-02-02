@@ -34,10 +34,6 @@ public class MovieController {
 	 */
 	@GetMapping
 	public List<Movie> movies() {
-//		return List.of(
-//			new Movie("Kabir Singh", 2019, 172),
-//			new Movie("Devdas", 2002, 185)
-//		);
 		return movieRepository.findAll();
 	}
 	
@@ -110,4 +106,9 @@ public class MovieController {
 		return movieRepository.findByTitle(title);
 	}
 	
+	@GetMapping("/byTitleContaining")
+	@ResponseBody
+	public List<Movie> moviesByTitleContaining(@RequestParam String title) {
+		return movieRepository.findByTitleContainingIgnoreCase(title);
+	}
 }

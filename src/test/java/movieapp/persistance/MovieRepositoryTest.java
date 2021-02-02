@@ -6,6 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.List;
 
@@ -81,6 +83,26 @@ class MovieRepositoryTest {
 		assertAll(moviesFound.stream().map(
 				m -> () -> assertEquals(title, m.getTitle() ))
 				);
+	}
+	
+	
+	@Test
+	void testFindByTitleContainingIgnoreCase() {
+		final String str = "Man";
+		var movies = List.of(
+			new Movie("Man of the year", 2020),
+			new Movie("Invisible man", 2021),
+			new Movie("Wonder Woman", 2022),
+			new Movie("Unforgettable", 2020)
+		);
+		movies.forEach(entityManager::persist);
+		entityManager.flush();
+		var moviesFound = movieRepository.findByTitleContainingIgnoreCase(str);
+		assertEquals(3, moviesFound.size());
+		assertAll(moviesFound.stream().map(
+				m -> () -> assertTrue(m.getTitle().toLowerCase().contains(str.toLowerCase()), m.getTitle().toLowerCase()))); 
+					// assertTrue(m.getTitle().toLowerCase().contains(str)
+						//, m.getTitle().toLowerCase()));
 	}
 	
 	private void saveAssertMovie(String title, Integer year, Integer duration) {
