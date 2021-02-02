@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -111,4 +110,29 @@ public class MovieController {
 	public List<Movie> moviesByTitleContaining(@RequestParam String title) {
 		return movieRepository.findByTitleContainingIgnoreCase(title);
 	}
+	
+	@GetMapping("/byYear")
+	@ResponseBody
+	public List<Movie> moviesByYear(@RequestParam int down) {
+		return movieRepository.findByYearGreaterThanEqual(down);
+	}
+	
+	@GetMapping("/byYearBetween")
+	@ResponseBody
+	public List<Movie> moviesByYearBetween(@RequestParam int down, int up) {
+		return movieRepository.findByYearBetween(down, up);
+	}
+	
+	@GetMapping("/byNullDuration")
+	@ResponseBody
+	public List<Movie> moviesByDurationNull() {
+		return movieRepository.findByDurationNull();
+	}
+	
+	@GetMapping("/byTitleAndYear")
+	@ResponseBody
+	public List<Movie> moviesByTitleAndYear(@RequestParam String title, int year) {
+		return movieRepository.findByTitleIgnoreCaseAndYear(title, year);
+	}
+	
 }
