@@ -135,4 +135,28 @@ public class MovieController {
 		return movieRepository.findByTitleIgnoreCaseAndYear(title, year);
 	}
 	
+	@GetMapping("/find")
+	@ResponseBody
+	public List<Movie> moviesFind(
+			@RequestParam (value="t", required = false) String title,
+			@RequestParam (value="yy", required = false) Integer year,
+			@RequestParam (value="ymin", required = false) Integer ymin,
+			@RequestParam (value="ymax", required = false) Integer ymax
+			) {
+		if ((ymin != null || ymax != null) && (title!=null || year!=null))
+			throw new RuntimeException("Illegal Operation");
+		if (title != null && year != null) {
+			return movieRepository.findByTitleIgnoreCaseAndYear(title, year);
+		} else if (title != null) {
+			return movieRepository.findByTitle(title);
+		} else if (year != null) {
+			return movieRepository.findByYear(year);
+		} else if (ymax == null) {
+			return movieRepository.findByYearGreaterThanEqual(ymin);
+		} else if (ymin != null) {
+			return movieRepository.findByYearBetween(ymin, ymax);
+		} else {
+			throw new RuntimeException("Illegal Operation");
+		}
+	}
 }
