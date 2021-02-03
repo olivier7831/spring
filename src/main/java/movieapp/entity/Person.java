@@ -29,6 +29,13 @@ public class Person {
 		super();
 		// TODO Auto-generated constructor stub
 	}
+	
+	
+
+	public Person(String name) {
+		super();
+		this.name = name;
+	}
 
 	public Person(String name, LocalDate birthdate) {
 		super();

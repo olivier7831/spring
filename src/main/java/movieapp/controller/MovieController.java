@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -33,7 +34,7 @@ public class MovieController {
 	 */
 	@GetMapping
 	public List<Movie> movies() {
-		return movieRepository.findAll();
+		return movieRepository.findAll(Sort.by("title"));
 	}
 	
 	/**
@@ -114,25 +115,25 @@ public class MovieController {
 	@GetMapping("/byYear")
 	@ResponseBody
 	public List<Movie> moviesByYear(@RequestParam int down) {
-		return movieRepository.findByYearGreaterThanEqual(down);
+		return movieRepository.findByYearGreaterThanEqualOrderByYear(down);
 	}
 	
 	@GetMapping("/byYearBetween")
 	@ResponseBody
 	public List<Movie> moviesByYearBetween(@RequestParam int down, int up) {
-		return movieRepository.findByYearBetween(down, up);
+		return movieRepository.findByYearBetweenOrderByYear(down, up);
 	}
 	
 	@GetMapping("/byNullDuration")
 	@ResponseBody
 	public List<Movie> moviesByDurationNull() {
-		return movieRepository.findByDurationNull();
+		return movieRepository.findByDurationNullOrderByTitle();
 	}
 	
 	@GetMapping("/byTitleAndYear")
 	@ResponseBody
 	public List<Movie> moviesByTitleAndYear(@RequestParam String title, int year) {
-		return movieRepository.findByTitleIgnoreCaseAndYear(title, year);
+		return movieRepository.findByTitleIgnoreCaseAndYearOrderByTitle(title, year);
 	}
 	
 	@GetMapping("/find")
@@ -146,15 +147,15 @@ public class MovieController {
 		if ((ymin != null || ymax != null) && (title!=null || year!=null))
 			throw new RuntimeException("Illegal Operation");
 		if (title != null && year != null) {
-			return movieRepository.findByTitleIgnoreCaseAndYear(title, year);
+			return movieRepository.findByTitleIgnoreCaseAndYearOrderByTitle(title, year);
 		} else if (title != null) {
 			return movieRepository.findByTitle(title);
 		} else if (year != null) {
-			return movieRepository.findByYear(year);
+			return movieRepository.findByYearOrderByTitle(year);
 		} else if (ymax == null) {
-			return movieRepository.findByYearGreaterThanEqual(ymin);
+			return movieRepository.findByYearGreaterThanEqualOrderByYear(ymin);
 		} else if (ymin != null) {
-			return movieRepository.findByYearBetween(ymin, ymax);
+			return movieRepository.findByYearBetweenOrderByYear(ymin, ymax);
 		} else {
 			throw new RuntimeException("Illegal Operation");
 		}

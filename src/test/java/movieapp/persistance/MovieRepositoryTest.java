@@ -124,7 +124,7 @@ class MovieRepositoryTest {
 		);
 		movies.forEach(entityManager::persist);
 		entityManager.flush();
-		var moviesFound = movieRepository.findByYearGreaterThanEqual(down);
+		var moviesFound = movieRepository.findByYearGreaterThanEqualOrderByYear(down);
 		assertEquals(2, moviesFound.size());
 		assertAll(moviesFound.stream().map(
 				m -> () -> assertTrue(m.getYear() >= down, "year should be >= " + down)
@@ -144,7 +144,7 @@ class MovieRepositoryTest {
 		);
 		movies.forEach(entityManager::persist);
 		entityManager.flush();
-		var moviesFound = movieRepository.findByYearBetween(down, up);
+		var moviesFound = movieRepository.findByYearBetweenOrderByYear(down, up);
 		assertEquals(2, moviesFound.size());
 		assertAll(moviesFound.stream().map(
 				m -> () -> assertTrue(m.getYear() >= down && m.getYear() <= up, "year should be >= " + down)
@@ -162,7 +162,7 @@ class MovieRepositoryTest {
 		);
 		movies.forEach(entityManager::persist);
 		entityManager.flush();
-		var moviesFound = movieRepository.findByDurationNull();
+		var moviesFound = movieRepository.findByDurationNullOrderByTitle();
 		assertEquals(2, moviesFound.size());
 		assertAll(moviesFound.stream().map(
 				m -> () -> assertTrue(m.getDuration() == null, "Duration null")
@@ -182,7 +182,7 @@ class MovieRepositoryTest {
 		);
 		movies.forEach(entityManager::persist);
 		entityManager.flush();
-		var moviesFound = movieRepository.findByTitleIgnoreCaseAndYear(title, year);
+		var moviesFound = movieRepository.findByTitleIgnoreCaseAndYearOrderByTitle(title, year);
 		assertEquals(1, moviesFound.size());
 		assertAll(moviesFound.stream().map(
 				m -> () -> assertTrue(m.getTitle().toLowerCase().equals(title.toLowerCase()) && m.getYear() == year)

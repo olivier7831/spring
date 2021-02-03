@@ -1,11 +1,13 @@
 package movieapp.entity;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.Transient;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 
 @Entity
 public class Movie {
@@ -17,7 +19,8 @@ public class Movie {
 	private Person director;
 	
 	
-	@Transient
+	@ManyToOne //(cascade = CascadeType.PERSIST)
+	@JoinColumn(name="id_director", nullable = true)
 	public Person getDirector() {
 		return director;
 	}
@@ -57,6 +60,14 @@ public class Movie {
 		this.title = title;
 		this.year = year;
 		this.duration = duration;
+	}
+
+	public Movie(String title, Integer year, Integer duration, Person director) {
+		super();
+		this.title = title;
+		this.year = year;
+		this.duration = duration;
+		this.director = director;
 	}
 
 	@Column(nullable = false, length = 300)
