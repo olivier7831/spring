@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import movieapp.entity.Movie;
 import movieapp.persistance.MovieRepository;
+import movieapp.persistance.PersonRepository;
 
 @Transactional
 @RestController
@@ -27,6 +28,9 @@ public class MovieController {
 
 	@Autowired
 	private MovieRepository movieRepository;
+	
+	@Autowired
+	private PersonRepository personRepository;
 	
 	/**
 	 * url /api/movies
@@ -159,5 +163,27 @@ public class MovieController {
 		} else {
 			throw new RuntimeException("Illegal Operation");
 		}
+	}
+	
+	@PutMapping("/director")
+	public Optional<Movie> setDirector(@RequestParam int idMovie, @RequestParam int idDirector) {
+//		Optional<Movie> movie = movieRepository.findById(idMovie);
+//		Optional<Person> director = personRepository.findById(idDirector);
+//		if(movie.isPresent()) {
+//			if(director.isPresent()) {
+//				movie.get().setDirector(director.get());
+//			}
+//			return movie;
+//		} else {
+//			return Optional.empty();
+//		}
+		
+		return movieRepository.findById(idMovie)
+				.flatMap(m -> personRepository.findById(idDirector)
+						.map(a -> {
+							m.setDirector(a);
+							return m;
+						})
+				);
 	}
 }
