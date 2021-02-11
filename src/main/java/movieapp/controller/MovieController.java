@@ -1,10 +1,12 @@
 package movieapp.controller;
 
+
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Sort;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,173 +19,201 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import movieapp.entity.Movie;
-import movieapp.persistance.MovieRepository;
-import movieapp.persistance.PersonRepository;
+import movieapp.dto.MovieSimple;
+import movieapp.service.IMovieService;
 
-@Transactional
 @RestController
 @RequestMapping("/api/movies")
 public class MovieController {
-
-	@Autowired
-	private MovieRepository movieRepository;
 	
 	@Autowired
-	private PersonRepository personRepository;
+	private IMovieService movieService;
 	
+//	@Autowired
+//	private ArtistRepository artistRepository;
+//	
 	/**
-	 * url /api/movies
-	 * @return
+	 * path /api/movies
+	 * @return list of movies in the repository
 	 */
-	@GetMapping
-	public List<Movie> movies() {
-		return movieRepository.findAll(Sort.by("title"));
+	@GetMapping 
+	@ResponseBody
+	public List<MovieSimple> movies() {
+//		return List.of(
+//				new Movie("Blade Runner", 1982, 117), 
+//				new Movie("Kabir Singh", 2019, 173));
+		return movieService.getAll();
 	}
 	
 	/**
-	 * url /api/movies/find
-	 * @return
+	 * path /api/movies/1
+	 * @param id id of the movie to find in the repository
+	 * @return movie with this id in the repository or Optional empty if not found
 	 */
 	@GetMapping("/{id}")
-	public Optional<Movie> movie(@PathVariable("id") int id) {
-		return movieRepository.findById(id);
+	@ResponseBody
+	public Optional<MovieSimple> movie(@PathVariable("id") int id) {
+		// return new Movie("Kabir Singh", 2019, 173);
+		return movieService.getById(id);
 	}
+//	
+//	/**
+//	 * path /api/movies/byTitle?t=Spectre
+//	 * @param title
+//	 * @return
+//	 */
+//	@GetMapping("/byTitle")
+//	public List<Movie> moviesByTitle(@RequestParam("t") String title) {
+//		return movieRepository.findByTitle(title);
+//	}
+//	
+//	/**
+//	 * path /api/movies/byTitleYear?t=Spectre&y=2015
+//	 * @param title
+//	 * @param year
+//	 * @return
+//	 */
+//	@GetMapping("/byTitleYear")
+//	public List<Movie> moviesByTitleYear(
+//			@RequestParam("t") String title, 
+//			// @RequestParam(value="y", defaultValue = "2020") int year)
+//			@RequestParam(value="y", required=false) Integer year)
+//	{
+//		if (Objects.isNull(year)) {
+//			return movieRepository.findByTitle(title);
+//		} else {
+//			return movieRepository.findByTitleAndYear(title, year);
+//		}
+//	}
+//	
+//	/**
+//	 * paths 
+//	 * 	/api/movies/byYearRange?mi=1950&ma=1980
+//	 *  /api/movies/byYearRange?mi=1950
+//	 *  /api/movies/byYearRange?ma=1980
+//	 */
+//	@GetMapping("/byYearRange")
+//	@ResponseBody
+//	public List<Movie> moviesByYearRange(
+//			@RequestParam(value="mi", required=false) Integer minYear,
+//			@RequestParam(value="ma", required=false) Integer maxYear)
+//	{
+//		if (Objects.nonNull(minYear)) {
+//			if (Objects.nonNull(maxYear)) {
+//				return movieRepository.findByYearBetweenOrderByYear(minYear, maxYear);
+//			} else {
+//				return movieRepository.findByYearGreaterThanEqual(minYear);
+//			}
+//		} else if (Objects.nonNull(maxYear)) {
+//			return movieRepository.findByYearLessThanEqual(maxYear);
+//		} else {
+//			return List.of();
+//		}
+//	}
+	
 	
 	/**
-	 * url /api/movies
-	 * @param movie
-	 * @return
+	 * path /api/movies
+	 * @param movie movie to add in the repository
+	 * @return movie added in the repository and completed (id, default values)
 	 */
 	@PostMapping
 	@ResponseBody
-	public Movie addMovie(@RequestBody Movie movie) {
-		movieRepository.save(movie);
-		System.out.println(movie.toString());
-		return movie;
+	public MovieSimple addMovie(@RequestBody MovieSimple movie) {
+		return movieService.add(movie); // insert movie
 	}
-	
-	/**
-	 * url /api/movies
-	 * @param movie
-	 * @return
-	 */
-	@PostMapping("/addlist")
-	@ResponseBody
-	public List<Movie> addMovies(@RequestBody List<Movie> movies) {
-		movieRepository.saveAll(movies);
-		System.out.println(movies.toString());
-		return movies;
-	}
-	
-	@PutMapping
-	public Optional<Movie> updateMovie(@RequestBody Movie movie) {
-		Optional<Movie> optMovieDb = movieRepository.findById(movie.getId());
-		optMovieDb.ifPresent(m -> {
-			m.setDirector(movie.getDirector());
-			m.setDuration(movie.getDuration());
-			m.setId(movie.getId());
-			m.setTitle(movie.getTitle());
-			m.setYear(movie.getYear());
-		});
-		System.out.println(optMovieDb.toString());
-		return optMovieDb;
-	}
-	
-	@DeleteMapping
-	public Optional<Movie> deleteMovie(@RequestBody Movie movie) {
-		return deleteMovie(movie.getId());
-	}
-	
-	@DeleteMapping("/{id}")
-	public Optional<Movie> deleteMovie(@PathVariable("id") int id) {
-		Optional<Movie> optMovieDb = movieRepository.findById(id);
-		
-		optMovieDb.ifPresent(m -> movieRepository.deleteById(id));
-		System.out.println(optMovieDb.toString());
-		return optMovieDb;
-	}
-	
-	@GetMapping("/byTitle")
-	@ResponseBody
-	public List<Movie> moviesByTitle(@RequestParam String title) {
-		return movieRepository.findByTitle(title);
-	}
-	
-	@GetMapping("/byTitleContaining")
-	@ResponseBody
-	public List<Movie> moviesByTitleContaining(@RequestParam String title) {
-		return movieRepository.findByTitleContainingIgnoreCase(title);
-	}
-	
-	@GetMapping("/byYear")
-	@ResponseBody
-	public List<Movie> moviesByYear(@RequestParam int down) {
-		return movieRepository.findByYearGreaterThanEqualOrderByYear(down);
-	}
-	
-	@GetMapping("/byYearBetween")
-	@ResponseBody
-	public List<Movie> moviesByYearBetween(@RequestParam int down, int up) {
-		return movieRepository.findByYearBetweenOrderByYear(down, up);
-	}
-	
-	@GetMapping("/byNullDuration")
-	@ResponseBody
-	public List<Movie> moviesByDurationNull() {
-		return movieRepository.findByDurationNullOrderByTitle();
-	}
-	
-	@GetMapping("/byTitleAndYear")
-	@ResponseBody
-	public List<Movie> moviesByTitleAndYear(@RequestParam String title, int year) {
-		return movieRepository.findByTitleIgnoreCaseAndYearOrderByTitle(title, year);
-	}
-	
-	@GetMapping("/find")
-	@ResponseBody
-	public List<Movie> moviesFind(
-			@RequestParam (value="t", required = false) String title,
-			@RequestParam (value="yy", required = false) Integer year,
-			@RequestParam (value="ymin", required = false) Integer ymin,
-			@RequestParam (value="ymax", required = false) Integer ymax
-			) {
-		if ((ymin != null || ymax != null) && (title!=null || year!=null))
-			throw new RuntimeException("Illegal Operation");
-		if (title != null && year != null) {
-			return movieRepository.findByTitleIgnoreCaseAndYearOrderByTitle(title, year);
-		} else if (title != null) {
-			return movieRepository.findByTitle(title);
-		} else if (year != null) {
-			return movieRepository.findByYearOrderByTitle(year);
-		} else if (ymax == null) {
-			return movieRepository.findByYearGreaterThanEqualOrderByYear(ymin);
-		} else if (ymin != null) {
-			return movieRepository.findByYearBetweenOrderByYear(ymin, ymax);
-		} else {
-			throw new RuntimeException("Illegal Operation");
-		}
-	}
-	
-	@PutMapping("/director")
-	public Optional<Movie> setDirector(@RequestParam int idMovie, @RequestParam int idDirector) {
-//		Optional<Movie> movie = movieRepository.findById(idMovie);
-//		Optional<Person> director = personRepository.findById(idDirector);
-//		if(movie.isPresent()) {
-//			if(director.isPresent()) {
-//				movie.get().setDirector(director.get());
-//			}
-//			return movie;
-//		} else {
+
+//	/**
+//	 * path /api/movies
+//	 * @param movie
+//	 * @return
+//	 */
+//	@PutMapping
+//	public Optional<Movie> updateMovie(@RequestBody Movie movie) {
+//		// read movie from database/repository
+//		Optional<Movie> optMovieDb = movieRepository.findById(movie.getId());
+//		optMovieDb.ifPresent(m -> {
+//			m.setTitle(movie.getTitle());
+//			m.setYear(movie.getYear());
+//			m.setDuration(movie.getDuration());
+//			// movieRepository.flush(); // done by @Transactional
+//		});
+//		return optMovieDb;
+//	}
+//	
+//	/**
+//	 * path /api/movies/director?mid=1&did=3
+//	 * @param idMovie
+//	 * @param idDirector
+//	 * @return
+//	 */
+//	@PutMapping("/director")
+//	public Optional<Movie> setDirector(
+//			@RequestParam("mid") int idMovie, 
+//			@RequestParam("did") int idDirector) 
+//	{
+//		// chercher Movie et Artist correspondant à idMovie et idDirector
+//		// si ok x 2
+//		// alors movie.setDirector(artist)
+//		// return optional avec le movie complété ou otional empty if missing entity
+//		
+//		Optional<Movie> optMovie = movieRepository.findById(idMovie);
+//		Optional<Artist> optArtist = artistRepository.findById(idDirector);
+//		if (optMovie.isEmpty() || optArtist.isEmpty()) {
 //			return Optional.empty();
 //		}
-		
-		return movieRepository.findById(idMovie)
-				.flatMap(m -> personRepository.findById(idDirector)
-						.map(a -> {
-							m.setDirector(a);
-							return m;
-						})
-				);
-	}
+//		Movie movie = optMovie.get();
+//		Artist artist = optArtist.get();
+//		movie.setDirector(artist);
+//		return Optional.of(movie);
+//	}
+//	
+//	/**
+//	 * NB: same thing in functional programming
+//	 * path /api/movies/director2?mid=1&did=3
+//	 * @param idMovie
+//	 * @param idDirector
+//	 * @return
+//	 */
+//	@PutMapping("/director2")
+//	public Optional<Movie> setDirector2(
+//			@RequestParam("mid") int idMovie, 
+//			@RequestParam("did") int idDirector) 
+//	{
+//		return movieRepository.findById(idMovie)
+//			.flatMap(m -> artistRepository.findById(idDirector)
+//					.map(a -> {
+//							m.setDirector(a);
+//							return m;
+//						}));
+//		// SQL :
+//		// - movie : select movie0_.id as id1_1_0_, movie0_.id_director as id_direc5_1_0_, movie0_.duration as duration2_1_0_, movie0_.title as title3_1_0_, movie0_.year as year4_1_0_, artist1_.id as id1_0_1_, artist1_.birthdate as birthdat2_0_1_, artist1_.deathdate as deathdat3_0_1_, artist1_.name as name4_0_1_ 
+//		//		from movie movie0_ left outer join artist artist1_ on movie0_.id_director=artist1_.id 
+//		//		where movie0_.id=?
+//		// - artist : select artist0_.id as id1_0_0_, artist0_.birthdate as birthdat2_0_0_, artist0_.deathdate as deathdat3_0_0_, artist0_.name as name4_0_0_ 
+//		//		from artist artist0_ where artist0_.id=?
+//		// - director : update movie set id_director=?, duration=?, title=?, year=? where id=?
+//	}
+//	
+//	/**
+//	 * path /api/movies
+//	 * @param movie movie to delete according to its id
+//	 * @return movie deleted from repository
+//	 */
+//	@DeleteMapping
+//	public Optional<Movie> deleteMovie(@RequestBody Movie movie) {
+//		return deleteMovieById(movie.getId());
+//	}
+//	
+//	/**
+//	 * url /api/movies/1
+//	 */
+//	@DeleteMapping("/{id}")
+//	public Optional<Movie> deleteMovieById(@PathVariable("id") int id) {
+//		Optional<Movie> optMovieDb = movieRepository.findById(id);
+//		optMovieDb.ifPresent(m -> movieRepository.deleteById(m.getId()));
+//		return optMovieDb;
+//	}
+	
+	
 }
